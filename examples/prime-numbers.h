@@ -1,8 +1,8 @@
 #include <array>
-#include <vector>
+#include <span>
 
 
-constexpr bool is_prime(const std::vector<int> &primes, int val) {
+constexpr bool is_prime(std::span<int> primes, int val) {
   for(auto i: primes) {
      if(val % i == 0 && i != 1) {
         return false;
@@ -16,19 +16,22 @@ constexpr std::array<int, N> primes() {
    if constexpr (N == 0) {
        return {};
    } else {
-      std::vector<int> res;
-      res.push_back(1);
-      
-      while(res.size() != N) {
-         int candidate = res.back() + 1;
-         while(!is_prime(res, candidate))
+
+      std::array<int, N> primes = {};
+      primes[0] = 1;
+      std::span<int> candidates{primes.begin(), 1};
+
+      while(candidates.size() != N) {
+         int candidate = candidates.back() + 1;
+         while(!is_prime(candidates, candidate))
          {
             candidate++;
          }
-         res.push_back(candidate);
+
+         const auto number = candidates.size();
+         primes[number] = candidate;
+         candidates = std::span<int>{primes.begin(), number + 1};
       }
-      std::array<int, N> primes;
-      std::copy(res.cbegin(), res.cend(), primes.begin());
       return primes;
    }
 }
